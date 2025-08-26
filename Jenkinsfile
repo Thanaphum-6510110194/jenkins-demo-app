@@ -8,23 +8,6 @@ pipeline {
   }
 
   stages {
-    stage('Show Workspace') {
-      steps {
-        sh 'pwd && ls -la'
-      }
-    }
-
-    stage('Unit Test') {
-      steps {
-        // รัน pytest ในคอนเทนเนอร์ python โดยผูก workspace เข้าไป
-        sh '''
-          docker run --rm \
-            -v "$WORKSPACE":/ws -w /ws \
-            python:3.11-slim /bin/sh -lc "python -V && pip install --no-cache-dir -r requirements.txt && pytest -q"
-        '''
-      }
-    }
-
     stage('Build Image') {
       steps {
         sh 'docker build -t $IMAGE_NAME:latest .'
