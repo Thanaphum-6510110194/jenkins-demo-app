@@ -1,24 +1,34 @@
 pipeline {
-  agent any
-
-  environment {
-    IMAGE_NAME     = 'jenkins-demo-app'
-    CONTAINER_NAME = 'demo-app'
-    APP_PORT       = '5000'
+  agent {
+    docker {
+      image 'docker:20.10.7'
+      // แก้ปัญหา ENTRYPOINT ของ image นี้ + ผูก docker.sock
+      args "--entrypoint='' -v /var/run/docker.sock:/var/run/docker.sock"
+    }
   }
 
+  // เราจะคุม checkout เอง เพื่อไม่ให้ซ้ำกับ default
+  options { skipDefaultCheckout(true) }
+
   stages {
+    stage('Checkout') {
+      steps {
+        // ใช้การตั้งค่า SCM ของ job เดิม (ตัวเดียวกับที่ Jenkinsfile ถูกดึงมา)
+        checkout scm
+      }
+    }
+
     stage('Build Image') {
       steps {
-        sh 'docker build -t $IMAGE_NAME:latest .'
+        sh 'docker version && docker build -t jenkins-demo-app:latest .'
       }
     }
 
     stage('Run Container') {
       steps {
         sh '''
-          docker rm -f $CONTAINER_NAME || true
-          docker run -d --name $CONTAINER_NAME -p $APP_PORT:$APP_PORT $IMAGE_NAME:latest
+          docker rm -f demo-app || true
+          docker run -d --name demo-app -p 5000:5000 jenkins-demo-app:latest
         '''
       }
     }
