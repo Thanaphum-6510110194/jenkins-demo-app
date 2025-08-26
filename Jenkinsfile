@@ -5,7 +5,9 @@ pipeline {
       args '-v /var/run/docker.sock:/var/run/docker.sock'
     }
   }
-  options { timestamps() }
+
+  // ไม่มี options { timestamps() } แล้ว
+
   environment {
     IMAGE_NAME     = 'jenkins-demo-app'
     CONTAINER_NAME = 'demo-app'
@@ -13,7 +15,7 @@ pipeline {
   }
 
   stages {
-    // ไม่มี stage('Checkout') แล้ว — ใช้ default checkout ของ Jenkins ที่ทำให้อัตโนมัติ
+    // ใช้ default checkout ของ Jenkins (Declarative: Checkout SCM) ที่ทำให้อัตโนมัติอยู่แล้ว
 
     stage('Unit Test') {
       steps {
@@ -30,7 +32,9 @@ pipeline {
     }
 
     stage('Build Image') {
-      steps { sh 'docker build -t $IMAGE_NAME:latest .' }
+      steps {
+        sh 'docker build -t $IMAGE_NAME:latest .'
+      }
     }
 
     stage('Run Container') {
