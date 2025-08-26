@@ -24,7 +24,7 @@ pipeline {
       steps {
         sh '''
           docker rm -f demo-app || true
-          docker run -d --name demo-app -p 5000:5000 jenkins-demo-app:latest
+          docker run -d --name demo-app -p 8081:8081 jenkins-demo-app:latest
         '''
       }
     }
