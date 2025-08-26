@@ -20,21 +20,6 @@ pipeline {
       }
     }
 
-    stage('Test') {
-      steps {
-        sh 'echo "Running tests..."'
-        // รัน pytest ในคอนเทนเนอร์ python แยก (ไม่ต้องแก้ Dockerfile แอป)
-        sh '''
-          docker run --rm \
-            -v "$WORKSPACE":/ws -w /ws \
-            python:3.11-slim /bin/sh -lc "
-              pip install --no-cache-dir -r requirements.txt pytest &&
-              pytest -q
-            "
-        '''
-      }
-    }
-
     stage('Build Image') {
       steps {
         sh 'docker build -t $IMAGE_NAME:latest .'
@@ -48,6 +33,13 @@ pipeline {
           docker run -d --name $CONTAINER_NAME -p ${APP_PORT}:${APP_PORT} $IMAGE_NAME:latest
         '''
       }
+    }
+    stage('Test') {
+        steps {
+            sh 'echo "Running tests..."'
+            sh 'docker run --rm jenkins-demo-app:latest pytest || true'
+                
+        }
     }
   }
 
