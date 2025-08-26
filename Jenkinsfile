@@ -1,27 +1,22 @@
 pipeline {
-  agent {
-    docker {
-      image 'docker:20.10.7'
-      args '-v /var/run/docker.sock:/var/run/docker.sock'
-    }
-  }
-
-  // ไม่มี options { timestamps() } แล้ว
-
+  agent any
   environment {
     IMAGE_NAME     = 'jenkins-demo-app'
     CONTAINER_NAME = 'demo-app'
     APP_PORT       = '5000'
+    APP_DIR        = '.'   // ถ้าไฟล์อยู่โฟลเดอร์ย่อย เปลี่ยนเป็นชื่อโฟลเดอร์ เช่น 'src'
   }
 
   stages {
-    // ใช้ default checkout ของ Jenkins (Declarative: Checkout SCM) ที่ทำให้อัตโนมัติอยู่แล้ว
+    stage('Show Workspace') {
+      steps { sh 'pwd && ls -la' }
+    }
 
     stage('Unit Test') {
       steps {
         sh '''
           docker run --rm \
-            -v "$PWD":/app -w /app \
+            -v "$PWD":/ws -w /ws/$APP_DIR \
             python:3.11-slim sh -c "
               python -V &&
               pip install --no-cache-dir -r requirements.txt &&
@@ -33,7 +28,7 @@ pipeline {
 
     stage('Build Image') {
       steps {
-        sh 'docker build -t $IMAGE_NAME:latest .'
+        sh 'docker build -t $IMAGE_NAME:latest $APP_DIR'
       }
     }
 
@@ -51,3 +46,4 @@ pipeline {
     }
   }
 }
+v
